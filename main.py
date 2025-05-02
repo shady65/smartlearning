@@ -54,12 +54,64 @@ def tutorials():
     tutorials = Tutorial.query.all()
     return render_template('tutorials.html', tutorials=tutorials)
 
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def login_post():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    user = User.query.filter_by(email=email).first()
+    
+    if user and password == user.password:  # In production, use proper password hashing
+        login_user(user)
+        return redirect(url_for('dashboard'))
+    
+    flash('Please check your login details and try again.')
+    return redirect(url_for('login'))
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
     if not current_user.is_admin:
         return redirect(url_for('home'))
     return render_template('dashboard.html')
+
+@app.route('/add_product', methods=['POST'])
+@login_required
+def add_product():
+    if not current_user.is_admin:
+        return redirect(url_for('home'))
+    
+    name = request.form.get('name')
+    description = request.form.get('description')
+    price = float(request.form.get('price'))
+    image = request.files.get('image')
+    
+    # Handle image upload here
+    
+    product = Product(name=name, description=description, price=price)
+    db.session.add(product)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/add_tutorial', methods=['POST'])
+@login_required
+def add_tutorial():
+    if not current_user.is_admin:
+        return redirect(url_for('home'))
+    
+    title = request.form.get('title')
+    content = request.form.get('content')
+    youtube_links = request.form.get('youtube_links')
+    downloads = request.form.get('downloads')
+    
+    tutorial = Tutorial(title=title, content=content, 
+                       youtube_links=youtube_links, downloads=downloads)
+    db.session.add(tutorial)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
