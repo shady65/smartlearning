@@ -58,18 +58,46 @@ def tutorials():
 def login():
     return render_template('login.html')
 
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
+@app.route('/signup', methods=['POST'])
+def signup_post():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    
+    user = User.query.filter_by(email=email).first()
+    if user:
+        flash('Email already exists')
+        return redirect(url_for('signup'))
+    
+    new_user = User(email=email, password=password, is_admin=False)
+    db.session.add(new_user)
+    db.session.commit()
+    
+    login_user(new_user)
+    return redirect(url_for('home'))
+
 @app.route('/login', methods=['POST'])
 def login_post():
     email = request.form.get('email')
     password = request.form.get('password')
     user = User.query.filter_by(email=email).first()
     
-    if user and password == user.password:  # In production, use proper password hashing
+    if user and password == user.password:
         login_user(user)
-        return redirect(url_for('dashboard'))
+        next_page = request.args.get('next')
+        return redirect(next_page if next_page else url_for('home'))
     
     flash('Please check your login details and try again.')
     return redirect(url_for('login'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 @app.route('/dashboard')
 @login_required
