@@ -1,0 +1,32 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tutorial-container">
+    <nav class="tutorial-nav">
+        {% for tutorial in tutorials %}
+        <a href="#{{ tutorial.id }}">{{ tutorial.title }}</a>
+        {% endfor %}
+    </nav>
+    <div class="tutorial-content">
+        {% for tutorial in tutorials %}
+        <article id="{{ tutorial.id }}">
+            <h2>{{ tutorial.title }}</h2>
+            <div class="content">{{ tutorial.content }}</div>
+            {% if tutorial.youtube_links %}
+            <div class="youtube-links">
+                <h3>Related Videos</h3>
+                {{ tutorial.youtube_links }}
+            </div>
+            {% endif %}
+            {% if tutorial.downloads %}
+            <div class="downloads">
+                <h3>Downloads</h3>
+                {{ tutorial.downloads }}
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
